@@ -56,7 +56,7 @@ const init = async () => {
     },
   });
 
-  /* await server.ext('onPreResponse', (request, h) => {
+  await server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
 
@@ -70,9 +70,17 @@ const init = async () => {
       return newResponse;
     }
 
+    // Server ERROR!
+    const responseServerError = h.response({
+      status: 'error',
+      message: 'Maaf, terjadi kegagalan pada server kami.',
+    });
+    responseServerError.code(500);
+  
+
     // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)
-    return response.continue || response;
-  }); */
+    return response.continue || response || responseServerError;
+  });
 
   //  registrasi plugin eksternal
   await server.register([

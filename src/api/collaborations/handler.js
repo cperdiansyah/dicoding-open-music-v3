@@ -13,93 +13,49 @@ class CollaborationsHandler {
   }
 
   async postCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: credentialId } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+    this._validator.validateCollaborationPayload(request.payload);
+    const { id: credentialId } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      await this._playlistsService.verifyPlaylistOwner(
-        playlistId,
-        credentialId
-      );
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
 
-      /* Verifikasi data user dan Playlist ada di database*/
-      await this._collaborationsService.verifyUser(userId);
-      await this._collaborationsService.verifyPlaylist(playlistId);
+    /* Verifikasi data user dan Playlist ada di database*/
+    await this._collaborationsService.verifyUser(userId);
+    await this._collaborationsService.verifyPlaylist(playlistId);
 
-      const collaborationId =
-        await this._collaborationsService.addCollaboration(playlistId, userId);
+    const collaborationId = await this._collaborationsService.addCollaboration(
+      playlistId,
+      userId
+    );
 
-      const response = h.response({
-        status: 'success',
-        message: 'Kolaborasi berhasil ditambahkan',
-        data: {
-          collaborationId,
-        },
-      });
-      response.code(201);
-      return response;
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
-
-      // Server ERROR!
-      const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
+    const response = h.response({
+      status: 'success',
+      message: 'Kolaborasi berhasil ditambahkan',
+      data: {
+        collaborationId,
+      },
+    });
+    response.code(201);
+    return response;
   }
 
   async deleteCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: credentialId } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+    this._validator.validateCollaborationPayload(request.payload);
+    const { id: credentialId } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      await this._playlistsService.verifyPlaylistOwner(
-        playlistId,
-        credentialId
-      );
-      
-      /* Verifikasi data user dan Playlist ada di database*/
-      await this._collaborationsService.verifyUser(userId);
-      await this._collaborationsService.verifyPlaylist(playlistId);
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
 
-      await this._collaborationsService.deleteCollaboration(playlistId, userId);
+    /* Verifikasi data user dan Playlist ada di database*/
+    await this._collaborationsService.verifyUser(userId);
+    await this._collaborationsService.verifyPlaylist(playlistId);
 
-      return {
-        status: 'success',
-        message: 'Kolaborasi berhasil dihapus',
-      };
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
+    await this._collaborationsService.deleteCollaboration(playlistId, userId);
 
-      // Server ERROR!
-      const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
+    return {
+      status: 'success',
+      message: 'Kolaborasi berhasil dihapus',
+    };
   }
 }
 
