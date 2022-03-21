@@ -27,7 +27,6 @@ class PlaylistService {
   }
 
   async getPlaylists(owner) {
-
     const query = {
       text: `
         SELECT playlists.*, users.username FROM playlists

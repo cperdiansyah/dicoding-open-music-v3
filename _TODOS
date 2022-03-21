@@ -3,4 +3,4 @@ TODO Create playlist_song table
 TODO Create collaborations table
 TODO Create playlist_song_activities table
 
-truncate albums, authentications, playlist_song, playlists, songs, users;
+truncate albums, songs, users, authentications, playlists, playlist_songs, playlist_song_activities, collaborations, user_album_likes;
