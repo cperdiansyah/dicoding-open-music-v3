@@ -74,6 +74,7 @@ const init = async () => {
   await server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
+    const statusCode = response.output ? response.output.statusCode : 200;
     if (response instanceof ClientError) {
       // membuat response baru dari response toolkit sesuai kebutuhan error handling
       const newResponse = h.response({
@@ -84,14 +85,15 @@ const init = async () => {
       return newResponse;
     }
 
-    if (response.statusCode === 500) {
+    if (statusCode === 500) {
       // Server ERROR!
-      const newResponse = h.response({
+      console.error(response.message);
+      const serverResponse = h.response({
         status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
+        message: 'Maaf, Terjadi kegagalan pada server kami.',
       });
-      newResponse.code(500);
-      return newResponse;
+      serverResponse.code(500);
+      return serverResponse;
     }
 
     // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)

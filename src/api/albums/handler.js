@@ -14,6 +14,8 @@ class AlbumsHandler {
     this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
 
     this.postAlbumCoverHandler = this.postAlbumCoverHandler.bind(this);
+    this.postAlbumLikeHandler = this.postAlbumLikeHandler.bind(this);
+    this.getAlbumLikeHandler = this.getAlbumLikeHandler.bind(this);
   }
 
   /* CRUD Album Handler */
@@ -91,7 +93,7 @@ class AlbumsHandler {
     const { id } = request.params;
 
     const path = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
-   
+
     await this._service.addAlbumCover(id, path);
 
     const response = h.response({
@@ -99,6 +101,41 @@ class AlbumsHandler {
       message: 'Sampul berhasil diunggah',
     });
     response.code(201);
+
+    return response;
+  }
+
+  /* Likes Album */
+  async postAlbumLikeHandler(request, h) {
+    const { id } = request.params;
+    const { id: userId } = request.auth.credentials;
+
+    await this._service.getAlbumById(id);
+    await this._service.addAlbumLike(id, userId);
+
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Album berhasil ditambahkan ke daftar suka',
+      })
+      .code(201);
+
+    return response;
+  }
+
+  async getAlbumLikeHandler(request, h) {
+    const { id } = request.params;
+    const { likes } = await this._service.getLikeAlbum(id);
+    const response = h.response({
+      status: 'success',
+      data: {
+        likes: likes.length,
+      },
+    });
+    response.code(200);
+
+    // Jika menerima dari cache maka header dicustom
+    // if (isCache) response.header('X-Data-Source', 'cache');
 
     return response;
   }
