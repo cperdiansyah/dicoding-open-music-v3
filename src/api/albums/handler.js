@@ -1,17 +1,22 @@
 const ClientError = require('../../exceptions/ClientError');
 
 class AlbumsHandler {
-  constructor(service, validator) {
+  constructor(service, validator, storageService, uploadValidator) {
     this._service = service;
     this._validator = validator;
+    this._storageService = storageService;
+    this._uploadValidator = uploadValidator;
 
     this.postAlbumHandler = this.postAlbumHandler.bind(this);
     this.getAlbumsHandler = this.getAlbumsHandler.bind(this);
     this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
     this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
     this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
+
+    this.postAlbumCoverHandler = this.postAlbumCoverHandler.bind(this);
   }
 
+  /* CRUD Album Handler */
   async postAlbumHandler(request, h) {
     this._validator.validateAlbumPayload(request.payload);
     const { name, year } = request.payload;
@@ -74,6 +79,28 @@ class AlbumsHandler {
       status: 'success',
       message: 'Album berhasil dihapus',
     };
+  }
+
+  /* Album Cover Handler */
+  async postAlbumCoverHandler(request, h) {
+    const { cover } = request.payload;
+    this._uploadValidator.validateImageHeaders(cover.hapi.headers);
+
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
+
+    const { id } = request.params;
+
+    const path = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
+   
+    await this._service.addAlbumCover(id, path);
+
+    const response = h.response({
+      status: 'success',
+      message: 'Sampul berhasil diunggah',
+    });
+    response.code(201);
+
+    return response;
   }
 }
 

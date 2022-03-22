@@ -3,6 +3,7 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
+const path = require('path');
 
 // Error handling
 const ClientError = require('./exceptions/ClientError');
@@ -43,6 +44,10 @@ const _exports = require('./api/exports');
 const ProducerService = require('./service/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
+// Uploads
+const StorageService = require('./service/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
 require('dotenv').config();
 
 const init = async () => {
@@ -52,6 +57,9 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService();
   const collaborationsService = new CollaborationsService();
+  const storageService = new StorageService(
+    path.resolve(__dirname, 'api/albums/file/images')
+  );
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -66,7 +74,6 @@ const init = async () => {
   await server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
-
     if (response instanceof ClientError) {
       // membuat response baru dari response toolkit sesuai kebutuhan error handling
       const newResponse = h.response({
@@ -77,21 +84,27 @@ const init = async () => {
       return newResponse;
     }
 
-    // Server ERROR!
-    const responseServerError = h.response({
-      status: 'error',
-      message: 'Maaf, terjadi kegagalan pada server kami.',
-    });
-    responseServerError.code(500);
+    if (response.statusCode === 500) {
+      // Server ERROR!
+      const newResponse = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+      newResponse.code(500);
+      return newResponse;
+    }
 
     // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)
-    return response.continue || response || responseServerError;
+    return response.continue || response;
   });
 
   //  registrasi plugin eksternal
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
   // mendefinisikan strategy autentikasi jwt
@@ -117,6 +130,8 @@ const init = async () => {
       options: {
         service: albumsService,
         validator: AlbumsValidator,
+        storageService,
+        uploadValidator: UploadsValidator,
       },
     },
     {
