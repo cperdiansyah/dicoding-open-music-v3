@@ -36,29 +36,40 @@ class AlbumsHandler {
     return response;
   }
 
-  async getAlbumsHandler() {
-    const albums = await this._service.getAlbums();
-    return {
-      status: 'success',
-      data: {
-        albums,
-      },
-    };
+  async getAlbumsHandler(request, h) {
+    const { albums, isCache = 0 } = await this._service.getAlbums();
+
+    const response = h
+      .response({
+        status: 'success',
+        data: {
+          albums,
+        },
+      })
+      .code(200);
+    if (isCache) response.header('X-Data-Source', 'cache');
+
+    return response;
   }
 
   async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const album = await this._service.getAlbumById(id);
-    const songs = await this._service.getSongByAlbumId(id);
+    const { album, isCache = 0 } = await this._service.getAlbumById(id);
+    const { songs } = await this._service.getSongByAlbumId(id);
 
     const albumWithSongs = { ...album, songs };
 
-    return {
-      status: 'success',
-      data: {
-        album: albumWithSongs,
-      },
-    };
+    const response = h
+      .response({
+        status: 'success',
+        data: {
+          album: albumWithSongs,
+        },
+      })
+      .code(200);
+    if (isCache) response.header('X-Data-Source', 'cache');
+
+    return response;
   }
 
   async putAlbumByIdHandler(request, h) {
@@ -125,7 +136,8 @@ class AlbumsHandler {
 
   async getAlbumLikeHandler(request, h) {
     const { id } = request.params;
-    const { likes } = await this._service.getLikeAlbum(id);
+    const { likes, isCache = 0 } = await this._service.getLikeAlbum(id);
+    
     const response = h.response({
       status: 'success',
       data: {
@@ -135,7 +147,7 @@ class AlbumsHandler {
     response.code(200);
 
     // Jika menerima dari cache maka header dicustom
-    // if (isCache) response.header('X-Data-Source', 'cache');
+    if (isCache) response.header('X-Data-Source', 'cache');
 
     return response;
   }

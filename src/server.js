@@ -48,14 +48,18 @@ const ExportsValidator = require('./validator/exports');
 const StorageService = require('./service/storage/StorageService');
 const UploadsValidator = require('./validator/uploads');
 
+// cache
+const CacheService = require('./service/redis/CacheService');
+
 require('dotenv').config();
 
 const init = async () => {
+  const cacheService = new CacheService();
   const songsService = new SongsService();
-  const albumsService = new AlbumsService();
+  const albumsService = new AlbumsService(cacheService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-  const playlistsService = new PlaylistsService();
+  const playlistsService = new PlaylistsService(cacheService);
   const collaborationsService = new CollaborationsService();
   const storageService = new StorageService(
     path.resolve(__dirname, 'api/albums/file/images')
