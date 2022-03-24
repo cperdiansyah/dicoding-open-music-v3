@@ -103,7 +103,7 @@ class AlbumsHandler {
 
     const { id } = request.params;
 
-    const path = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
+    const path = `http://${process.env.HOST}:${process.env.PORT}/upload/pictures/${filename}`;
 
     await this._service.addAlbumCover(id, path);
 
@@ -111,6 +111,7 @@ class AlbumsHandler {
       status: 'success',
       message: 'Sampul berhasil diunggah',
     });
+
     response.code(201);
 
     return response;
@@ -137,7 +138,7 @@ class AlbumsHandler {
   async getAlbumLikeHandler(request, h) {
     const { id } = request.params;
     const { likes, isCache = 0 } = await this._service.getLikeAlbum(id);
-    
+
     const response = h.response({
       status: 'success',
       data: {
