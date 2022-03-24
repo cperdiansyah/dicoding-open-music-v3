@@ -1,5 +1,6 @@
-node_modules
 .env
 _TODOS
 open-music.zip 
-src/api/upload
+
+node_modules
+src/api/albums/file

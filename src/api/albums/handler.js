@@ -1,5 +1,3 @@
-const ClientError = require('../../exceptions/ClientError');
-
 class AlbumsHandler {
   constructor(service, validator, storageService, uploadValidator) {
     this._service = service;
@@ -103,7 +101,7 @@ class AlbumsHandler {
 
     const { id } = request.params;
 
-    const path = `http://${process.env.HOST}:${process.env.PORT}/upload/pictures/${filename}`;
+    const path = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
 
     await this._service.addAlbumCover(id, path);
 
